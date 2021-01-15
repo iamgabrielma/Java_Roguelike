@@ -1,8 +1,10 @@
 package RogueHelperMethods;
 
+import org.w3c.dom.Entity;
 import org.w3c.dom.ranges.Range;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.Random;
 
 public class RogueHelper {

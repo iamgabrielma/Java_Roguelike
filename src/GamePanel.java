@@ -37,7 +37,10 @@ public class GamePanel extends JPanel {
     //static final int FOV_DIAMETER = 175;
     static List<Point2D> allFovPositions = new ArrayList<>();
     List<Tile> allFovTiles = new ArrayList<>();
-
+    // [12.01.21] Adding Entity Movement and AI
+    public static Point2D currentPlayerLocation;
+    public static boolean playerCanMove;
+    public static boolean playerIsFighting;
 
     // Testing procedural generation
     List<Point2D> allPositions = new ArrayList<>();
@@ -122,7 +125,7 @@ public class GamePanel extends JPanel {
 
         // Adding some helper design methods here:
         if(RogueHelper.__isPackageActive() == true){
-            System.out.println("[RogueHelper]: Active");
+            //System.out.println("[RogueHelper]: Active");
         }
         // Tile Matrix:
         // TODO: I don't need to redraw this every time, only player/entities. Check how to do
@@ -276,6 +279,12 @@ public class GamePanel extends JPanel {
         System.out.println("[Board - Player FOV] Setting up initial FOV"); //
         playerLocX = x[0];
         playerLocY = y[0];
+
+        currentPlayerLocation = new Point2D.Double();
+        currentPlayerLocation.setLocation(playerLocX,playerLocY);
+
+        playerCanMove = true;
+        playerIsFighting = false;
     }
 
     public void setFloors(){
@@ -391,6 +400,14 @@ public class GamePanel extends JPanel {
 
     public void move(){
 
+//        if(!playerCanMove){
+//            System.out.println("Cannot move");
+////            if (playerIsFighting){
+////                fight();
+////            }
+//            return;
+//        }
+        // 1. Player turn
         switch (direction){
             case 'U':
                 // refactor 04.01.21 removing x25
@@ -407,23 +424,20 @@ public class GamePanel extends JPanel {
                 x[0] = x[0] + NEW_UNIT_SIZE;
                 break;
         }
+        // 2. Enemy turn
         entityMovement();
+        // 3. Check Player collisions and adjust position if necessary
         checkCollisions();
 
-
-        // Update player location variables and repaint()
         if (checkCollisions() == true){
             backToPreviousPosition(direction);
         }else{
             playerLocX = x[0];
             playerLocY = y[0];
         }
-        // Checks current FOV - with latest player coordinates - before repainting
-        //Tile _t = new Tile();
-        //Point2D _p = new Point2D.Double(playerLocX,playerLocY);
-        //_t.tilePosition = _p;
-        //_checkFOV_TEST(listOfFloorTiles, _t);
-        //checkFOV((float) playerLocX,(float) playerLocY);
+
+        // 4. Recalculate Field of View and repaint elements on screen
+        currentPlayerLocation.setLocation(playerLocX,playerLocY);
         reCalculateFOV(playerLocX,playerLocY);
         repaint();
     }
@@ -524,17 +538,29 @@ public class GamePanel extends JPanel {
                 break;
             }
         }
-        for(int i=0; i<listOfEnemyTiles.size();i++){
 
-            int _enemyX = (int)listOfEnemyTiles.get(i).tilePosition.getX();
-            int _enemyY = (int)listOfEnemyTiles.get(i).tilePosition.getY();
+        for(int i=0; i<listOfEntities.size();i++){
+
+            int _enemyX = (int)listOfEntities.get(i).entityPosition.getX();
+            int _enemyY = (int)listOfEntities.get(i).entityPosition.getY();
 
             if((x[0] == _enemyX) && (y[0] == _enemyY)){
-                isEnemyCollider(listOfEnemyTiles.get(i));
-                return true; // Possibly this is why shows twice. Here' we don't break it as we want the player to go back to previousLocation
+                if (isEntityCollider(listOfEntities.get(i)) == true){
+                    System.out.println("[DEBUG] Enemy Collision!");
+                }
+                return true;
             }
+
         }
         return false;
+    }
+
+    void isCombat(Tile _enemyTile){
+        playerCanMove = false;
+        playerIsFighting = true;
+        System.out.println("isCombat()");
+
+        // DOING : Pass entity.
     }
     // Accepts the item tile, returns true.
     boolean isItemCollider(Tile itemTile){
@@ -545,9 +571,20 @@ public class GamePanel extends JPanel {
     }
 
     boolean isEnemyCollider(Tile enemyTile){
+        System.out.println("[WIP - DEBUG] Combat should happen here, on colliding. Before removing anything so we can pass this tile coord as parameter");
+        // 1. Activate combat
+        // 2. Fight / resolve actions
+        // 3. Check health
+        // 4. Solve situation.
         listOfEnemyTiles.remove(enemyTile);
         listOfOccupiedTilePositions.remove(enemyTile.tilePosition);
         //System.out.println("Enemy!");
+        return true;
+    }
+
+    boolean isEntityCollider(Entity _enemyEntity){
+        listOfEntities.remove(_enemyEntity);
+        listOfOccupiedTilePositions.remove(_enemyEntity.entityPosition);
         return true;
     }
 
@@ -664,9 +701,21 @@ public class GamePanel extends JPanel {
                     direction = 'D';
                     move();
                     break;
+                case KeyEvent.VK_A:
+                    if (playerIsFighting == true){
+                        //fight();
+                        System.out.println("A pressed . Player is fighting.");
+                    }
+                    break;
             }
         }
     }
+
+//    public void fight(){
+//        // TODO: For now player always starts attacking, this will change inthe future. Move this into fight class.
+//        //RogueHelper.attack(); //player attacks entity
+//
+//    }
 
     public void run(){
         /*
