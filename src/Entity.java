@@ -140,7 +140,7 @@ public class Entity {
         if (checkIfEngageFight(GamePanel.currentPlayerLocation.getX(), _X) == true || checkIfEngageFight(GamePanel.currentPlayerLocation.getY(), _Y) == true){
             //GamePanel.playerCanMove = false;
             GamePanel.playerIsFighting = true;
-            System.out.println("Press A to Attack!!");
+            //System.out.println("Press A to Attack!!");
         }
 
         return entityPosition;

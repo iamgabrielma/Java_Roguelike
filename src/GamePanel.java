@@ -26,6 +26,7 @@ public class GamePanel extends JPanel {
     //static final int DELAY = 75; // higher number, slower game
 
     // Player-specific
+    Player _temporaryPlayerClass;
     final int x[] = new int[GAME_UNITS]; //TODO: DEPRECATE
     final int y[] = new int[GAME_UNITS]; //TODO: DEPRECATE
     int bodyParts = 1;
@@ -285,6 +286,8 @@ public class GamePanel extends JPanel {
 
         playerCanMove = true;
         playerIsFighting = false;
+
+        _temporaryPlayerClass = new Player("Rogue", 10);
     }
 
     public void setFloors(){
@@ -707,6 +710,11 @@ public class GamePanel extends JPanel {
                         System.out.println("A pressed . Player is fighting.");
                     }
                     break;
+                case KeyEvent.VK_I:
+                    String _target = "";
+                    System.out.println("Inspecting Target...");
+                    inspect(_target);
+                    break;
             }
         }
     }
@@ -716,7 +724,11 @@ public class GamePanel extends JPanel {
 //        //RogueHelper.attack(); //player attacks entity
 //
 //    }
+    public void inspect(String _targetName){
 
+        System.out.println("[Temporary] Name: " + _temporaryPlayerClass.getPlayerName() + " | Health:" + _temporaryPlayerClass.getPlayerHealth());
+
+    }
     public void run(){
         /*
          * We're implementing the classic "delta time" here with a 60FPS target, or refresh every 1/60th of a second
